@@ -1,8 +1,10 @@
 package com.lekkimworld.apps;
 
+import java.io.FileInputStream;
 import java.net.URL;
 import java.security.interfaces.RSAPublicKey;
 import java.text.SimpleDateFormat;
+import java.util.Properties;
 
 import com.auth0.jwk.Jwk;
 import com.auth0.jwk.JwkProvider;
@@ -19,15 +21,22 @@ public class App {
     public static void main( String[] args )
     {
         try {
+            // read props
+            Properties props = new Properties();
+            props.load(new FileInputStream(
+                System.getProperty("user.dir") + 
+                System.getProperty("file.separator") + 
+                "env.properties"));
+
             // JWT - probably read from Authorization header (i.e. Bearer xyz123)
-            final String token = "eyJraWQiOiJteWNlcnQiLCJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwczovL25hbWVkcHJpbmNpcGFsLmV4YW1wbGUuY29tIiwic3ViIjoiTmFtZWRQcmluY2lwYWwiLCJhdWQiOiJodHRwczovL2xla2tpbS1zaW1wbGUtand0LWRpc3BsYXkuaGVyb2t1YXBwLmNvbSIsIm5iZiI6MTYxNTgxMDU2OCwiaWF0IjoxNjE1ODEwNTY4LCJleHAiOjE2MTU4MTA4Njh9.Ld73YNNuSVn84yFw00er7_370NNWVQyphoBqnrQupEcakdi_Gh2OkBAVgYtXU73vNwMromDqPrQS8rVTCsSEVLtZT-cP0TqAMNq1gVLFfKccPSPemwVapQUH-saJNoCih8QLIaojYsJV4XgNeb4yU5smvBKFS-Nj6Q1Sz7zCBZpck6Bhii1Ohd0vAQhf8KUw4XjX8UOTIeI8GSB5R0Qnw5tALewg6HezC7L0zwkBXOhiDMscDJdH6efGJQ83Ih0W8zntDZz_pTU8HoA6hrVYStEyEKkAhWnne4YfIRvnV7LnKT1uVVfywx0HXdhsSCljeATltdNEvs4xFEWsc1llGg";
+            final String token = props.getProperty("JWT");
 
             // decode JWT and get keyid specified in the token
             DecodedJWT jwt = JWT.decode(token);
             final String keyid = jwt.getKeyId();
 
             // read JWKS from endpoint and get appropriate key
-            JwkProvider provider = new UrlJwkProvider(new URL("https://lekkim-scratchorg-20210312.my.salesforce.com/id/keys"));
+            JwkProvider provider = new UrlJwkProvider(new URL(props.getProperty("JWKS_URL")));
             Jwk jwk = provider.get(keyid);
 
             // verify signature
